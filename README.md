@@ -63,7 +63,4 @@ Repositorio de prácticas, ejercicios y proyectos desarrollados en la asignatura
 2º DAM – Módulo: Acceso a Datos  
 Año académico: **2025**
 
----
-
-## 📂 Estructura del repositorio
 
