@@ -1,0 +1,8 @@
+	/**
+	 * Actualiza un Vehiculo y su ficha técnica. Si la ficha técnica no existe, se
+	 * inserta una nueva fila.
+	 *
+	 * @param vehiculo Vehiculo con los datos actualizados (debe incluir id válido).
+	 * @return true si la actualización fue exitosa (y se actulizó/insertó su
+	 *         ficha), false en caso contrario.
+	 */

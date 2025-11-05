@@ -1,0 +1,405 @@
+package clinica_persistence;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
+
+import clinica_model.Certificacion;
+import clinica_model.Veterinario;
+import errores.Errores;
+
+public class VeterinarioPersistence {
+
+    // Método helper para notificar errores de forma amigable
+    private static void notificarError(String accion, SQLException e) {
+        String mensaje = e.getMessage();
+        if (mensaje.contains("UNIQUE constraint failed")) {
+            System.out.println("Error al " + accion + ": registro duplicado.");
+        } else if (mensaje.contains("FOREIGN KEY constraint failed")) {
+            System.out.println("Error al " + accion + ": violación de clave foránea.");
+        } else if (mensaje.contains("PRIMARY KEY")) {
+            System.out.println("Error al " + accion + ": conflicto con clave primaria.");
+        } else {
+            System.out.println("Error al " + accion + ": " + mensaje);
+        }
+    }
+
+    /**
+     * Inserta un nuevo Veterinario en la base de datos junto con su contrato.
+     * [NOTA: Se mantiene la inserción manual de num_licencia, ya que la PK de Veterinario NO es autogenerada.]
+     */
+    public static boolean create(Veterinario veterinario) {
+        String sqlVeterinario = "INSERT INTO Veterinario (num_licencia, nombre, apellido, fecha_contratacion) VALUES (?, ?, ?, ?)";
+        String sqlContrato = "INSERT INTO detalleContrato (salario_base, horario_semanal, veterinario_licencia) VALUES (?, ?, ?)";
+
+        Connection connection = null;
+        boolean insertado = false;
+
+        if (veterinario == null || veterinario.getNum_licencia() <= 0) {
+            return false;
+        }
+
+        try {
+            connection = DatabaseConnection.getConnection();
+            connection.setAutoCommit(false);
+
+            // Inserción del veterinario
+            PreparedStatement stmtVeterinario = connection.prepareStatement(sqlVeterinario);
+            stmtVeterinario.setInt(1, veterinario.getNum_licencia());
+            stmtVeterinario.setString(2, veterinario.getNombre());
+            stmtVeterinario.setString(3, veterinario.getApellido());
+            stmtVeterinario.setString(4, veterinario.getFecha_contratacion());
+            insertado = stmtVeterinario.executeUpdate() > 0;
+            stmtVeterinario.close();
+
+            // Inserción del contrato
+            if (insertado) {
+                PreparedStatement stmtContrato = connection.prepareStatement(sqlContrato);
+                stmtContrato.setDouble(1, veterinario.getSalarioBase());
+                stmtContrato.setDouble(2, veterinario.getHorarioSemanal());
+                stmtContrato.setInt(3, veterinario.getNum_licencia());
+                insertado = stmtContrato.executeUpdate() > 0;
+                stmtContrato.close();
+            }
+            
+            if (insertado) {
+                // Iteramos sobre las Certificaciones que tiene el Veterinario en su HashMap.
+                // El método .values() del HashMap nos da una colección de objetos Certificacion.
+                for (Certificacion certificacion : veterinario.certificacionesMap.values()) { 
+                    
+                    // 1. Asignar la Clave Foránea (FK): La PK del Veterinario.
+                    //    Esto es crucial para que la Certificación sepa a qué Veterinario pertenece.
+                    certificacion.setVeterinario_licencia(veterinario.getNum_licencia()); 
+                    
+                    // 2. Insertar la Certificación. El método create() de CertificacionPersistence:
+                    //    a) Ejecuta el INSERT (sin ID).
+                    //    b) Recupera el ID autogenerado de la DB (usando RETURN_GENERATED_KEYS).
+                    //    c) Llama a certificacion.setId(nuevoId), SINCRONIZANDO el objeto en el HashMap.
+                    if (!CertificacionPersistence.create(certificacion)) {
+                        insertado = false; // Si falla la inserción de una certificación, marcamos la transacción como fallida.
+                        break; 
+                    }
+                }
+            }
+
+            if (insertado) {
+                connection.commit();
+            } else {
+                connection.rollback();
+            }
+
+        } catch (SQLException e) {
+            notificarError("crear veterinario", e);
+            insertado = false;
+            try {
+                if (connection != null) {
+                    connection.rollback();
+                }
+            } catch (SQLException e1) {
+                notificarError("hacer rollback", e1);
+            }
+        } finally {
+            // NO cerrar la conexión aquí - se maneja a nivel superior
+            if (connection != null) {
+                try {
+                    connection.setAutoCommit(true);
+                    // NO: connection.close();
+                } catch (SQLException e) {
+                    notificarError("restaurar autoCommit", e);
+                }
+            }
+        }
+
+        return insertado;
+    }
+
+    /**
+     * Recupera todos los veterinarios de la base de datos
+     */
+    public static List<Veterinario> readAll() {
+        List<Veterinario> veterinarios = new ArrayList<>();
+        String sqlVeterinario = "SELECT num_licencia, nombre, apellido, fecha_contratacion FROM Veterinario";
+        String sqlContrato = "SELECT salario_base, horario_semanal FROM detalleContrato WHERE veterinario_licencia = ?";
+        String sqlCertificaciones = "SELECT id FROM Certificacion WHERE veterinario_licencia = ?";
+
+        Connection connection = null;
+
+        try {
+            connection = DatabaseConnection.getConnection();
+
+            // Cargar datos básicos de veterinarios
+            PreparedStatement pstmt = connection.prepareStatement(sqlVeterinario);
+            ResultSet rsVeterinario = pstmt.executeQuery();
+
+            while (rsVeterinario.next()) {
+                Veterinario v = new Veterinario(
+                        rsVeterinario.getInt("num_licencia"),
+                        rsVeterinario.getString("nombre"),
+                        rsVeterinario.getString("apellido"),
+                        rsVeterinario.getString("fecha_contratacion"),
+                        0, 0.0, 0.0
+                );
+                veterinarios.add(v);
+            }
+            rsVeterinario.close();
+            pstmt.close();
+
+            // Cargar detalles de contrato para cada veterinario
+            PreparedStatement pstmtContrato = connection.prepareStatement(sqlContrato);
+            // Cargar certificaciones para cada veterinario
+            PreparedStatement pstmtCertificaciones = connection.prepareStatement(sqlCertificaciones);
+
+            for (Veterinario v : veterinarios) {
+                // Cargar contrato
+                pstmtContrato.setInt(1, v.getNum_licencia());
+                ResultSet rsContrato = pstmtContrato.executeQuery();
+                if (rsContrato.next()) {
+                    v.setSalarioBase(rsContrato.getDouble("salario_base"));
+                    v.setHorarioSemanal(rsContrato.getDouble("horario_semanal"));
+                }
+                rsContrato.close();
+
+                // Cargar IDs de certificaciones
+                pstmtCertificaciones.setInt(1, v.getNum_licencia());
+                ResultSet rsCertificaciones = pstmtCertificaciones.executeQuery();
+                ArrayList<Integer> certificacionesIds = new ArrayList<>();
+                while (rsCertificaciones.next()) {
+                    certificacionesIds.add(rsCertificaciones.getInt("id"));
+                }
+                v.addCertificaciones(certificacionesIds);
+                rsCertificaciones.close();
+            }
+
+            pstmtContrato.close();
+            pstmtCertificaciones.close();
+
+        } catch (SQLException e) {
+            notificarError("leer todos los veterinarios", e);
+            veterinarios = new ArrayList<>();
+        } finally {
+            // NO cerrar la conexión aquí
+        }
+
+        return veterinarios;
+    }
+
+    /**
+     * Recupera un Veterinario por su licencia
+     */
+    public static Veterinario readById(int num_licencia) {
+        String sqlVeterinario = "SELECT num_licencia, nombre, apellido, fecha_contratacion FROM Veterinario WHERE num_licencia = ?";
+        String sqlContrato = "SELECT id, salario_base, horario_semanal FROM detalleContrato WHERE veterinario_licencia = ?";
+        String sqlCertificaciones = "SELECT id FROM Certificacion WHERE veterinario_licencia = ?";
+
+        String nombre = "";
+        String apellido = "";
+        String fecha_contratacion = "";
+        int contratoId = 0;
+        double salarioBase = 0.0;
+        double horarioSemanal = 0.0;
+        Veterinario veterinario = null;
+
+        Connection connection = null;
+        try {
+            connection = DatabaseConnection.getConnection();
+
+            // Cargo los datos del veterinario
+            PreparedStatement stmt = connection.prepareStatement(sqlVeterinario);
+            stmt.setInt(1, num_licencia);
+            ResultSet rs = stmt.executeQuery();
+            boolean encontrado = false;
+
+            if (rs.next()) {
+                nombre = rs.getString("nombre");
+                apellido = rs.getString("apellido");
+                fecha_contratacion = rs.getString("fecha_contratacion");
+                encontrado = true;
+            }
+
+            rs.close();
+            stmt.close();
+
+            // Cargo los datos del contrato
+            if (encontrado) {
+                PreparedStatement stmtContrato = connection.prepareStatement(sqlContrato);
+                stmtContrato.setInt(1, num_licencia);
+                ResultSet rsContrato = stmtContrato.executeQuery();
+
+                if (rsContrato.next()) {
+                    contratoId = rsContrato.getInt("id");
+                    salarioBase = rsContrato.getDouble("salario_base");
+                    horarioSemanal = rsContrato.getDouble("horario_semanal");
+                }
+                rsContrato.close();
+                stmtContrato.close();
+
+                // Crear objeto veterinario
+                veterinario = new Veterinario(
+                        num_licencia, nombre, apellido, fecha_contratacion,
+                        contratoId, salarioBase, horarioSemanal
+                );
+
+                // Cargar IDs de certificaciones
+                PreparedStatement stmtCertificaciones = connection.prepareStatement(sqlCertificaciones);
+                stmtCertificaciones.setInt(1, num_licencia);
+                ResultSet rsCertificaciones = stmtCertificaciones.executeQuery();
+
+                ArrayList<Integer> certificacionesIds = new ArrayList<>();
+                while (rsCertificaciones.next()) {
+                    certificacionesIds.add(rsCertificaciones.getInt("id"));
+                }
+                veterinario.addCertificaciones(certificacionesIds);
+
+                rsCertificaciones.close();
+                stmtCertificaciones.close();
+            }
+        } catch (SQLException e) {
+            notificarError("leer veterinario por ID", e);
+        } finally {
+            // NO cerrar la conexión aquí
+        }
+        return veterinario;
+    }
+
+    /**
+     * Actualiza un veterinario y su contrato
+     */
+    public static boolean update(Veterinario veterinario) {
+        if (veterinario == null || veterinario.getNum_licencia() <= 0) {
+            return false;
+        }
+
+        String sqlVeterinarioUpdate = "UPDATE Veterinario SET nombre = ?, apellido = ?, fecha_contratacion = ? WHERE num_licencia = ?";
+        String sqlContratoUpdate = "UPDATE DetalleContrato SET salario_base = ?, horario_semanal = ? WHERE veterinario_licencia = ?";
+        // [NOTA: Aunque el nombre de la variable tiene un error tipográfico ('sqlContrtopInsert'), la SQL es correcta y funcionalmente se usa para el 'upsert' del contrato.]
+        String sqlContrtopInsert = "INSERT INTO DetalleContrato (veterinario_licencia, salario_base, horario_semanal) VALUES (?, ?, ?)";
+
+        Connection connection = null;
+        boolean actualizado = false;
+
+        try {
+            connection = DatabaseConnection.getConnection();
+            connection.setAutoCommit(false);
+
+            PreparedStatement stmt = connection.prepareStatement(sqlVeterinarioUpdate);
+            stmt.setString(1, veterinario.getNombre());
+            stmt.setString(2, veterinario.getApellido());
+            stmt.setString(3, veterinario.getFecha_contratacion());
+            stmt.setInt(4, veterinario.getNum_licencia());
+            actualizado = (stmt.executeUpdate() > 0);
+            stmt.close();
+
+            if (actualizado) {
+                PreparedStatement stmtContrato = connection.prepareStatement(sqlContratoUpdate);
+                stmtContrato.setDouble(1, veterinario.getSalarioBase());
+                stmtContrato.setDouble(2, veterinario.getHorarioSemanal());
+                stmtContrato.setInt(3, veterinario.getNum_licencia());
+
+                boolean contratoUpdate = (stmtContrato.executeUpdate() > 0);
+                stmtContrato.close();
+
+                if (!contratoUpdate) {
+                    PreparedStatement stmtContratoInsert = connection.prepareStatement(sqlContrtopInsert);
+                    stmtContratoInsert.setInt(1, veterinario.getNum_licencia());
+                    stmtContratoInsert.setDouble(2, veterinario.getSalarioBase());
+                    stmtContratoInsert.setDouble(3, veterinario.getHorarioSemanal());
+
+                    actualizado = stmtContratoInsert.executeUpdate() > 0;
+                    stmtContratoInsert.close();
+                }
+            }
+
+            if (actualizado)
+                connection.commit();
+            else
+                connection.rollback();
+
+        } catch (SQLException e) {
+            notificarError("actualizar veterinario", e);
+            actualizado = false;
+            try {
+                if (connection != null)
+                    connection.rollback();
+            } catch (SQLException e1) {
+                notificarError("hacer rollback", e1);
+            }
+        } finally {
+            if (connection != null) {
+                try {
+                    connection.setAutoCommit(true);
+                    // NO: connection.close();
+                } catch (SQLException e) {
+                    notificarError("restaurar autoCommit", e);
+                }
+            }
+        }
+
+        return actualizado;
+    }
+
+    /**
+     * Elimina un veterinario por su licencia
+     */
+    public static boolean delete(int num_licencia) {
+        if (num_licencia <= 0) {
+            return false;
+        }
+
+        String sql = "DELETE FROM Veterinario WHERE num_licencia = ?";
+
+        Connection connection = null;
+        boolean eliminado = false;
+
+        try {
+            connection = DatabaseConnection.getConnection();
+            connection.setAutoCommit(false);
+
+            PreparedStatement stmt = connection.prepareStatement(sql);
+            stmt.setInt(1, num_licencia);
+            eliminado = stmt.executeUpdate() > 0;
+            stmt.close();
+
+            if (eliminado) {
+                connection.commit();
+            } else {
+                connection.rollback();
+            }
+
+        } catch (SQLException e) {
+            notificarError("eliminar veterinario", e);
+            eliminado = false;
+            try {
+                if (connection != null) {
+                    connection.rollback();
+                }
+            } catch (SQLException e1) {
+                notificarError("hacer rollback", e1);
+            }
+        } finally {
+            if (connection != null) {
+                try {
+                    connection.setAutoCommit(true);
+                    // NO: connection.close();
+                } catch (SQLException e) {
+                    notificarError("restaurar autoCommit", e);
+                }
+            }
+        }
+
+        return eliminado;
+    }
+
+    /**
+     * Elimina un veterinario usando el objeto veterinario como parámetro
+     */
+    public static boolean delete(Veterinario veterinario) {
+        if (veterinario != null)
+            return VeterinarioPersistence.delete(veterinario.getNum_licencia());
+        else
+            return false;
+    }
+}

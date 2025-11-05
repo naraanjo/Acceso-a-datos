@@ -1,0 +1,157 @@
+package Veterinario.vet;
+
+import java.util.Scanner;
+
+public class Libreria {
+    private static Scanner scanner = new Scanner(System.in);
+    
+    /**
+     * Lee un string del usuario con un mensaje
+     */
+    public static String leerString(String mensaje) {
+        System.out.print(mensaje);
+        return scanner.nextLine().trim();
+    }
+    
+    /**
+     * Lee un string opcional (puede estar vacío)
+     */
+    public static String leerStringOpcional(String mensaje) {
+        System.out.print(mensaje);
+        return scanner.nextLine().trim();
+    }
+    
+    /**
+     * Lee un entero del usuario con validación
+     * Continúa preguntando hasta que se ingrese un número válido
+     */
+    public static int leerEntero(String mensaje) {
+        while (true) {
+            System.out.print(mensaje);
+            String input = scanner.nextLine().trim();
+            try {
+                return Integer.parseInt(input);
+            } catch (NumberFormatException e) {
+                System.out.println("Error: Por favor ingrese un número entero válido.");
+            }
+        }
+    }
+    
+    /**
+     * Lee un double del usuario con validación
+     * Continúa preguntando hasta que se ingrese un número válido
+     */
+    public static double leerDouble(String mensaje) {
+        while (true) {
+            System.out.print(mensaje);
+            String input = scanner.nextLine().trim();
+            try {
+                return Double.parseDouble(input);
+            } catch (NumberFormatException e) {
+                System.out.println("Error: Por favor ingrese un número decimal válido.");
+            }
+        }
+    }
+    
+    /**
+     * Parsea un string a entero con manejo de errores
+     * Devuelve 0 si no se puede parsear
+     */
+    public static int parsearEntero(String texto) {
+        try {
+            return Integer.parseInt(texto.trim());
+        } catch (NumberFormatException e) {
+            System.out.println("Error: No se pudo convertir '" + texto + "' a número entero.");
+            return 0;
+        }
+    }
+    
+    /**
+     * Parsea un string a double con manejo de errores
+     * Devuelve 0.0 si no se puede parsear
+     */
+    public static double parsearDouble(String texto) {
+        try {
+            return Double.parseDouble(texto.trim());
+        } catch (NumberFormatException e) {
+            System.out.println("Error: No se pudo convertir '" + texto + "' a número decimal.");
+            return 0.0;
+        }
+    }
+    
+    /**
+     * Lee un entero dentro de un rango específico
+     * Continúa preguntando hasta que se ingrese un número dentro del rango
+     */
+    public static int leerEnteroEnRango(String mensaje, int min, int max) {
+        while (true) {
+            int numero = leerEntero(mensaje);
+            if (numero >= min && numero <= max) {
+                return numero;
+            } else {
+                System.out.println("Error: El número debe estar entre " + min + " y " + max + ".");
+            }
+        }
+    }
+    
+    /**
+     * Lee un double dentro de un rango específico
+     * Continúa preguntando hasta que se ingrese un número dentro del rango
+     */
+    public static double leerDoubleEnRango(String mensaje, double min, double max) {
+        while (true) {
+            double numero = leerDouble(mensaje);
+            if (numero >= min && numero <= max) {
+                return numero;
+            } else {
+                System.out.println("Error: El número debe estar entre " + min + " y " + max + ".");
+            }
+        }
+    }
+    
+    /**
+     * Lee una respuesta sí/no del usuario
+     * Continúa preguntando hasta que se ingrese una respuesta válida
+     */
+    public static boolean leerSiNo(String mensaje) {
+        while (true) {
+            String respuesta = leerString(mensaje).toLowerCase();
+            if (respuesta.equals("s") || respuesta.equals("si") || respuesta.equals("sí") || respuesta.equals("y") || respuesta.equals("yes")) {
+                return true;
+            } else if (respuesta.equals("n") || respuesta.equals("no")) {
+                return false;
+            } else {
+                System.out.println("Error: Por favor ingrese 's' para sí o 'n' para no.");
+            }
+        }
+    }
+    
+    /**
+     * Pausa la ejecución hasta que el usuario presione Enter
+     */
+    public static void pausar() {
+        System.out.print("\nPresione Enter para continuar...");
+        scanner.nextLine();
+    }
+    
+    /**
+     * Lee un double opcional (puede estar vacío)
+     * Devuelve null si está vacío, el valor double si se ingresa un número
+     */
+    public static Double leerDoubleOpcional(String mensaje) {
+        while (true) {
+            System.out.print(mensaje);
+            String input = scanner.nextLine().trim();
+            
+            if (input.isEmpty()) {
+                return null; // Valor opcional, no se cambia
+            }
+            
+            try {
+                return Double.parseDouble(input);
+            } catch (NumberFormatException e) {
+                System.out.println("Error: Por favor ingrese un número decimal válido o deje vacío para no cambiar.");
+            }
+        }
+    }
+}

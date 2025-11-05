@@ -1,0 +1,253 @@
+package clinica_model;
+
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+
+import clinica_persistence.CertificacionPersistence;
+
+/**
+ * Clase Modelo Veterinario UNIFICADA. Contiene los atributos del Veterinario
+ * (Tabla principal) y del DetalleContrato (Relación 1:1). Veterinario (1 en la
+ * relación 1:N) Cada veterinario puede tener muchas certificaciones.
+ * 
+ */
+// [MODIFICACIÓN: Se implementa la interfaz Iterable<Certificacion> para permitir iterar sobre las certificaciones usando un bucle for-each. (Cumple el TODO)]
+public class Veterinario implements Iterable<Certificacion> {
+
+	private static final DateTimeFormatter ISO_DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
+	// --- ATRIBUTOS DE LA TABLA Veterinario---
+	private int num_licencia;
+	private String nombre;
+	private String apellido;
+	private String fecha_contratacion; // String (YYYY-MM-DD) validado.
+
+	// --- ATRIBUTOS DE LA TABLA DetalleContrato ---
+
+	// Se mantiene 'id' aunque se asuma que es FK de Veterinario. Se usa para mapeo
+	// DB.
+	private int contratoId;
+	private double salarioBase;
+	private double horarioSemanal; // Horas trabajadas a la semana
+
+	// TODO
+	// Uso de HasMap, clave - valor | Id - objeto
+	// Tanto en veterinario como en certificacion
+	// Iterator e iterable, para las listas de los objetos. De solo lectura.
+	// Relación 1:N con Certificacion
+
+	// --- RELACIÓN 1:N CON CERTIFICACION ---
+	private HashMap<Integer, Certificacion> certificacionesMap;
+
+	// Constructor Vacío
+	public Veterinario() {
+		this.num_licencia = 0;
+		this.nombre = "";
+		this.apellido = "";
+		this.fecha_contratacion = "";
+
+		// Inicialización de Contrato (1:1)
+		this.salarioBase = 0.0;
+		this.horarioSemanal = 0.0;
+
+		// 1:N
+		this.certificacionesMap = new HashMap<>();
+
+	}
+
+	// Constructor Completo (Solo atributos de 'Veterinario')
+	public Veterinario(int num_licencia, String nombre, String apellido, String fecha_contratacion, int contratoId,
+			double salarioBase, double horarioSemanal) {
+
+		// Validación de atributos de Veterinario
+		this.num_licencia = (num_licencia > 0) ? num_licencia : 0;
+		this.nombre = (nombre != null && !nombre.trim().isEmpty()) ? nombre.trim() : "";
+		this.apellido = (apellido != null && !apellido.trim().isEmpty()) ? apellido.trim() : "";
+		setFecha_contratacion(fecha_contratacion);
+
+		// Validación de atributos de DetalleContrato
+		this.contratoId = (contratoId >= 0) ? contratoId : 0;
+		this.salarioBase = (salarioBase >= 0.0) ? salarioBase : 0.0;
+		this.horarioSemanal = (horarioSemanal > 0 && horarioSemanal <= 60) ? horarioSemanal : 0;
+
+		// 1:N
+		this.certificacionesMap = new HashMap<>();
+
+	}
+
+	// Getters y Setters
+
+	public int getNum_licencia() {
+		return num_licencia;
+	}
+
+	public void setNum_licencia(int num_licencia) {
+		this.num_licencia = (num_licencia > 0) ? num_licencia : 0;
+	}
+
+	public String getNombre() {
+		return nombre;
+	}
+
+	public void setNombre(String nombre) {
+		this.nombre = (nombre != null && !nombre.trim().isEmpty()) ? nombre.trim() : "";
+	}
+
+	public String getApellido() {
+		return apellido;
+	}
+
+	public void setApellido(String apellido) {
+		this.apellido = (apellido != null && !apellido.trim().isEmpty()) ? apellido.trim() : "";
+	}
+
+	public String getFecha_contratacion() {
+		return fecha_contratacion;
+	}
+
+	public void setFecha_contratacion(String fecha_contratacion) {
+		// Aplicamos la validación rigurosa: si es válida la asigna, si no, asigna "".
+		this.fecha_contratacion = validateAndFormatDate(fecha_contratacion);
+	}
+
+	/**
+	 * Valida si la cadena de fecha cumple con el formato YYYY-MM-DD y es
+	 * lógicamente válida. Si es válida, devuelve la cadena formateada; si no lo es,
+	 * devuelve cadena vacía "".
+	 */
+	private String validateAndFormatDate(String fecha_contratacion_str) {
+		if (fecha_contratacion_str == null || fecha_contratacion_str.trim().isEmpty()) {
+			return ""; // Evita null, devuelve cadena vacía.
+		}
+
+		try {
+			// Usa LocalDate para validar formato (YYYY-MM-DD) y validez lógica (ej: no 30
+			// de febrero)
+			LocalDate date = LocalDate.parse(fecha_contratacion_str.trim(), ISO_DATE_FORMATTER);
+			return date.format(ISO_DATE_FORMATTER);
+
+		} catch (DateTimeParseException e) {
+			// Si falla la validación, devolvemos cadena vacía
+			return "";
+		}
+	}
+
+	public int getContratoId() {
+		return contratoId;
+	}
+
+	public void setContratoId(int contratoId) {
+		this.contratoId = (contratoId >= 0) ? contratoId : 0;
+	}
+
+	public double getSalarioBase() {
+		return salarioBase;
+	}
+
+	public void setSalarioBase(double salarioBase) {
+		this.salarioBase = (salarioBase >= 0.0) ? salarioBase : 0.0;
+	}
+
+	public double getHorarioSemanal() {
+		return horarioSemanal;
+	}
+
+	public void setHorarioSemanal(double horarioSemanal) {
+		// Unicamente es valido entre 1 y 60 horas de trabajo semanales en mi Bd
+		this.horarioSemanal = (horarioSemanal > 0 && horarioSemanal <= 60) ? horarioSemanal : 0;
+	}
+
+	// Relacion 1:N
+	// Añadir una certificación por su ID
+
+	/**
+	 * Añade una certificación por su ID
+	 */
+	public void addCertificacion(Integer certificacionId) {
+		this.certificacionesMap.put(certificacionId, null);
+	}
+
+	/**
+	 * Añade múltiples certificaciones por sus IDs
+	 */
+	public void addCertificaciones(Integer... certificacionesIds) {
+		for (Integer cId : certificacionesIds) {
+			this.certificacionesMap.put(cId, null);
+		}
+	}
+
+	/**
+	 * Añade una colección de IDs de certificaciones
+	 */
+	public void addCertificaciones(Collection<Integer> certificacionesIds) {
+		for (Integer cId : certificacionesIds) {
+			this.certificacionesMap.put(cId, null);
+		}
+	}
+
+	/**
+	 * Elimina una certificación por su ID
+	 */
+	public void removeCertificacion(Integer certificacionId) {
+		this.certificacionesMap.remove(certificacionId);
+	}
+
+	/**
+	 * Elimina múltiples certificaciones por sus IDs
+	 */
+	public void removeCertificaciones(Collection<Integer> certificacionesIds) {
+		for (Integer cId : certificacionesIds) {
+			this.certificacionesMap.remove(cId);
+		}
+	}
+
+	/**
+	 * Elimina todas las certificaciones
+	 */
+	public void clearCertificaciones() {
+		this.certificacionesMap.clear();
+	}
+
+	/**
+	 * Obtiene el número de certificaciones
+	 */
+	public int getNumeroCertificaciones() {
+		return this.certificacionesMap.size();
+	}
+
+	/**
+	 * Obtiene un iterador de IDs de certificaciones
+	 */
+	public Iterator<Integer> getCertificacionesIds() {
+		return new ArrayList<>(this.certificacionesMap.keySet()).iterator();
+	}
+
+	/**
+	 * Obtiene un iterador de objetos Certificacion (carga)
+	 */
+	public Iterator<Certificacion> getCertificaciones() {
+		for (Integer cId : this.certificacionesMap.keySet()) {
+			if (this.certificacionesMap.get(cId) == null) {
+				Certificacion c = CertificacionPersistence.readById(cId);
+				if (c != null) {
+					c.setVeterinario_licencia(this.num_licencia);
+					this.certificacionesMap.put(cId, c);
+				}
+			}
+		}
+		return new ArrayList<>(this.certificacionesMap.values()).iterator();
+	}
+
+    // [MODIFICACIÓN: Implementación del método iterator() para cumplir con la interfaz Iterable<Certificacion>.]
+    @Override
+    public Iterator<Certificacion> iterator() {
+        // Se delega al método de carga perezosa existente.
+        return getCertificaciones();
+    }
+}

@@ -1,0 +1,55 @@
+package Veterinario.vet;
+
+public class Main {
+
+    public static void main(String[] args) {
+        String dbPath = "clinica.db";
+        System.out.println("Base de datos usada: " + new java.io.File(dbPath).getAbsolutePath());
+        iniciarAplicacion();
+    }
+
+    private static void iniciarAplicacion() {
+        int opcion;
+
+        do {
+            opcion = FuncionalidadMenu.mostrarMenuPrincipal();
+            switch (opcion) {
+                case 1 -> {
+                    int opcionVet;
+                    do {
+                        opcionVet = FuncionalidadMenu.mostrarMenuVeterinarios();
+                        switch (opcionVet) {
+                            case 1 -> FuncionalidadMenu.crearVeterinario();
+                            case 2 -> FuncionalidadMenu.buscarVeterinarioPorLicencia();
+                            case 3 -> FuncionalidadMenu.mostrarTodosVeterinarios();
+                            case 4 -> FuncionalidadMenu.actualizarVeterinario();
+                            case 5 -> FuncionalidadMenu.eliminarVeterinario();
+                            case 0 -> System.out.println("Volviendo al menú principal...");
+                            default -> System.out.println("Opción no válida.");
+                        }
+                    } while (opcionVet != 0);
+                }
+                case 2 -> {
+                    int opcionCert;
+                    do {
+                        opcionCert = FuncionalidadMenu.mostrarMenuCertificaciones();
+                        switch (opcionCert) {
+                            case 1 -> FuncionalidadMenu.crearCertificacion();
+                            case 2 -> FuncionalidadMenu.buscarCertificacionPorId();
+                            case 3 -> FuncionalidadMenu.mostrarTodasCertificaciones();
+                            case 4 -> FuncionalidadMenu.buscarCertificacionesPorVeterinario();
+                            case 5 -> FuncionalidadMenu.actualizarCertificacion();
+                            case 6 -> FuncionalidadMenu.eliminarCertificacion();
+                            case 0 -> System.out.println("Volviendo al menú principal...");
+                            default -> System.out.println("Opción no válida.");
+                        }
+                    } while (opcionCert != 0);
+                }
+                case 3 -> FuncionalidadMenu.mostrarTodosLosDatos();
+                case 4 -> FuncionalidadMenu.ejecutarPruebasAutomaticas();
+                case 0 -> System.out.println("Saliendo del sistema...");
+                default -> System.out.println("Opción no válida.");
+            }
+        } while (opcion != 0);
+    }
+}

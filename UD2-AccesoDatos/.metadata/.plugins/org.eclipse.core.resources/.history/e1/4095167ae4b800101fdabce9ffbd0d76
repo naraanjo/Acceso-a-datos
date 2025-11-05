@@ -1,0 +1,205 @@
+package Veterinario.vet;
+
+import java.util.List;
+import clinica_model.Certificacion;
+import clinica_model.Veterinario;
+import clinica_persistence.CertificacionPersistence;
+import clinica_persistence.VeterinarioPersistence;
+
+public class FuncionalidadMenu {
+
+    //  MENÚS PRINCIPALES 
+
+    public static int mostrarMenuPrincipal() {
+        System.out.println("\n=== MENÚ PRINCIPAL ===");
+        System.out.println("1. Gestión de Veterinarios");
+        System.out.println("2. Gestión de Certificaciones");
+        System.out.println("3. Mostrar todos los datos del sistema");
+        System.out.println("4. Ejecutar pruebas automáticas");
+        System.out.println("0. Salir");
+        return Libreria.leerEntero("Seleccione una opción: ");
+    }
+
+    public static int mostrarMenuVeterinarios() {
+        System.out.println("\n=== MENÚ VETERINARIOS ===");
+        System.out.println("1. Crear veterinario");
+        System.out.println("2. Buscar veterinario por licencia");
+        System.out.println("3. Mostrar todos los veterinarios");
+        System.out.println("4. Actualizar veterinario");
+        System.out.println("5. Eliminar veterinario");
+        System.out.println("0. Volver");
+        return Libreria.leerEntero("Seleccione una opción: ");
+    }
+
+    public static int mostrarMenuCertificaciones() {
+        System.out.println("\n=== MENÚ CERTIFICACIONES ===");
+        System.out.println("1. Crear certificación");
+        System.out.println("2. Buscar certificación por ID");
+        System.out.println("3. Mostrar todas las certificaciones");
+        System.out.println("4. Buscar certificaciones por veterinario");
+        System.out.println("5. Actualizar certificación");
+        System.out.println("6. Eliminar certificación");
+        System.out.println("0. Volver");
+        return Libreria.leerEntero("Seleccione una opción: ");
+    }
+
+    // CRUD VETERINARIOS 
+
+    public static void crearVeterinario() {
+        System.out.println("\n=== CREAR VETERINARIO ===");
+        Veterinario vet = new Veterinario();
+
+        vet.setNum_licencia(Libreria.leerEntero("Número de licencia: "));
+        vet.setNombre(Libreria.leerString("Nombre: "));
+        vet.setApellido(Libreria.leerString("Apellido: "));
+        vet.setFecha_contratacion(Libreria.leerString("Fecha de contratación (YYYY-MM-DD): "));
+        vet.setSalarioBase(Libreria.leerDouble("Salario base: "));
+        vet.setHorarioSemanal(Libreria.leerDouble("Horas semanales: "));
+
+        if (VeterinarioPersistence.create(vet))
+            System.out.println("Veterinario creado exitosamente.");
+        else
+            System.out.println("Error al crear veterinario.");
+    }
+
+    public static void buscarVeterinarioPorLicencia() {
+        int licencia = Libreria.leerEntero("\nIngrese número de licencia: ");
+        Veterinario vet = VeterinarioPersistence.readById(licencia);
+
+        if (vet != null) {
+            System.out.println("\n--- DETALLES VETERINARIO ---");
+            VeterinarioPersistence.mostrarDetallesVeterinario(vet);
+        } else {
+            System.out.println("Veterinario no encontrado.");
+        }
+    }
+
+    public static void mostrarTodosVeterinarios() {
+        List<Veterinario> veterinarios = VeterinarioPersistence.readAll();
+        if (veterinarios.isEmpty()) {
+            System.out.println("No hay veterinarios registrados.");
+        } else {
+            System.out.println("\n--- LISTADO DE VETERINARIOS ---");
+            veterinarios.forEach(VeterinarioPersistence::mostrarDetallesVeterinario);
+        }
+    }
+
+    public static void actualizarVeterinario() {
+        int licencia = Libreria.leerEntero("\nIngrese número de licencia del veterinario a actualizar: ");
+        Veterinario vet = VeterinarioPersistence.readById(licencia);
+
+        if (vet == null) {
+            System.out.println("Veterinario no encontrado.");
+            return;
+        }
+
+        String nuevoNombre = Libreria.leerStringOpcional("Nuevo nombre (" + vet.getNombre() + "): ");
+        if (!nuevoNombre.isBlank()) vet.setNombre(nuevoNombre);
+
+        String nuevoApellido = Libreria.leerStringOpcional("Nuevo apellido (" + vet.getApellido() + "): ");
+        if (!nuevoApellido.isBlank()) vet.setApellido(nuevoApellido);
+
+        if (VeterinarioPersistence.update(vet))
+            System.out.println("Veterinario actualizado correctamente.");
+        else
+            System.out.println("Error al actualizar veterinario.");
+    }
+
+    public static void eliminarVeterinario() {
+        int licencia = Libreria.leerEntero("\nIngrese número de licencia del veterinario a eliminar: ");
+        if (VeterinarioPersistence.delete(licencia))
+            System.out.println("Veterinario eliminado exitosamente.");
+        else
+            System.out.println("Error al eliminar veterinario.");
+    }
+
+    // CRUD CERTIFICACIONES 
+
+    public static void crearCertificacion() {
+        System.out.println("\n=== CREAR CERTIFICACIÓN ===");
+        Certificacion cert = new Certificacion();
+
+        cert.setInstitucion_emisora(Libreria.leerString("Institución emisora: "));
+        cert.setNombre_especialidad(Libreria.leerString("Nombre de especialidad: "));
+        int licencia = Libreria.leerEntero("Licencia del veterinario: ");
+        cert.setVeterinario_licencia(licencia);
+
+        Veterinario vet = VeterinarioPersistence.readById(licencia);
+        if (vet == null) {
+            System.out.println("Error: No existe un veterinario con licencia " + licencia);
+            return;
+        }
+
+        if (CertificacionPersistence.create(cert))
+            System.out.println("Certificación creada con ID: " + cert.getId());
+        else
+            System.out.println("Error al crear certificación.");
+    }
+
+    public static void buscarCertificacionPorId() {
+        int id = Libreria.leerEntero("\nIngrese ID de certificación: ");
+        Certificacion cert = CertificacionPersistence.readById(id);
+
+        if (cert != null)
+            CertificacionPersistence.mostrarDetallesCertificacion(cert);
+        else
+            System.out.println("Certificación no encontrada.");
+    }
+
+    public static void mostrarTodasCertificaciones() {
+        List<Certificacion> lista = CertificacionPersistence.readAll();
+        if (lista.isEmpty()) {
+            System.out.println("No hay certificaciones registradas.");
+        } else {
+            System.out.println("\n--- TODAS LAS CERTIFICACIONES ---");
+            lista.forEach(CertificacionPersistence::mostrarDetallesCertificacion);
+        }
+    }
+
+    public static void buscarCertificacionesPorVeterinario() {
+        int licencia = Libreria.leerEntero("\nIngrese número de licencia del veterinario: ");
+        List<Certificacion> lista = CertificacionPersistence.readByVeterinarioLicencia(licencia);
+
+        if (lista.isEmpty())
+            System.out.println("No se encontraron certificaciones para este veterinario.");
+        else
+            lista.forEach(CertificacionPersistence::mostrarDetallesCertificacion);
+    }
+
+    public static void actualizarCertificacion() {
+        int id = Libreria.leerEntero("\nIngrese ID de certificación a actualizar: ");
+        Certificacion cert = CertificacionPersistence.readById(id);
+
+        if (cert == null) {
+            System.out.println("Certificación no encontrada.");
+            return;
+        }
+
+        String nuevaInst = Libreria.leerStringOpcional("Nueva institución (" + cert.getInstitucion_emisora() + "): ");
+        if (!nuevaInst.isBlank()) cert.setInstitucion_emisora(nuevaInst);
+
+        String nuevaEsp = Libreria.leerStringOpcional("Nueva especialidad (" + cert.getNombre_especialidad() + "): ");
+        if (!nuevaEsp.isBlank()) cert.setNombre_especialidad(nuevaEsp);
+
+        if (CertificacionPersistence.update(cert))
+            System.out.println("Certificación actualizada correctamente.");
+        else
+            System.out.println("Error al actualizar certificación.");
+    }
+
+    public static void eliminarCertificacion() {
+        int id = Libreria.leerEntero("\nIngrese ID de certificación a eliminar: ");
+        if (CertificacionPersistence.delete(id))
+            System.out.println("Certificación eliminada exitosamente.");
+        else
+            System.out.println("Error al eliminar certificación.");
+    }
+
+    // BD COMPLETA 
+
+    public static void mostrarTodosLosDatos() {
+        System.out.println("\n=== DATOS DEL SISTEMA ===");
+        mostrarTodosVeterinarios();
+        mostrarTodasCertificaciones();
+    }
+}
