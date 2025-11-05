@@ -59,7 +59,7 @@ Repositorio de prácticas, ejercicios y proyectos desarrollados en la asignatura
 ---
 
 ## 👨‍💻 Autor
-**Nombre del alumno**  
+**Álvaro Naranjo**  
 2º DAM – Módulo: Acceso a Datos  
 Año académico: **2025**
 
