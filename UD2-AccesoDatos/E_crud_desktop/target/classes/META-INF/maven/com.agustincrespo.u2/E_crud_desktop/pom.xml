@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>com.agustincrespo.u2</groupId>
+	<artifactId>E_crud_desktop</artifactId>
+	<version>1.0.0</version>
+
+	<name>E_crud_desktop</name>
+	<url>http://desktop.crud.u2.agustincrespo.com</url>
+
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<maven.compiler.release>21</maven.compiler.release>
+		<maven.compiler.source>21</maven.compiler.source>
+		<maven.compiler.target>21</maven.compiler.target>
+	</properties>
+
+<!--	<dependencies>
+		 https://mvnrepository.com/artifact/org.xerial/sqlite-jdbc 
+		<dependency>
+			<groupId>org.xerial</groupId>
+			<artifactId>sqlite-jdbc</artifactId>
+			<version>3.50.3.0</version>
+		</dependency>
+		 https://mvnrepository.com/artifact/com.zaxxer/HikariCP 
+		<dependency>
+			<groupId>com.zaxxer</groupId>
+			<artifactId>HikariCP</artifactId>
+			<version>7.0.0</version>
+		</dependency>
+	</dependencies>-->
+</project>
