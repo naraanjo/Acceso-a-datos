@@ -1,0 +1,13 @@
+¿QUÉ HAY EN ESTE PROYECTO?
+
+Un ejemplo básico del uso de JPA sobre una base de datos relacional con dos tablas 1:1.
+  |-> Como motor de JPA se utiliza Hibernate y como base de datos tomaremos SQLite.
+  |-> El proyecto está desarrollado con Maven y Java 21.
+
+ORDEN DE VISUALIZACIÓN
+1) El fichero "persistence.xml" en la ruta "src/main/resources/META-INF/persistence.xml" define la unidad de persistencia y las propiedades de conexión a la base de datos.
+2) La clase Usuario
+3) La clase Perfil
+4) La clase de ejecución, App.java
+
+Y ahora, soluciona el error que da el proyecto al ejecutarlo.

@@ -1,0 +1,61 @@
+<!--
+Este es el fichero de configuración central de JPA.
+Equivale a tu antiguo 'db.config' + 'ConnectionFactory' de los proyectos anteriores.
+-->
+<persistence xmlns="https://jakarta.ee/xml/ns/persistence"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="https://jakarta.ee/xml/ns/persistence https://jakarta.ee/xml/ns/persistence/persistence_3_1.xsd"
+	version="3.1">
+
+	<!-- 
+    Una "Unidad de Persistencia" es una configuración de BBDD.
+    Puedes tener varias (una para test, otra para producción, etc.)
+    Le damos un nombre para poder llamarla desde Java.
+    -->
+	<persistence-unit name="usuarios-jpa-pu" transaction-type="RESOURCE_LOCAL">
+
+		<!-- Le decimos qué clases son "Entidades" -->
+		<class>com.agustincrespo.u3.jpa.basico.model.Usuario</class>
+		<class>com.agustincrespo.u3.jpa.basico.model.Perfil</class>
+
+		<!-- Propiedades de conexión (lo que antes iba en db.config) -->
+		<properties>
+			<!-- Driver JDBC -->
+			<property 
+				name="jakarta.persistence.jdbc.driver"
+				value="org.sqlite.JDBC" />
+
+			<!-- URL de la BBDD -->
+			<property 
+				name="jakarta.persistence.jdbc.url"
+				value="jdbc:sqlite:usuarios.db" />
+
+			<!-- (Usuario y pass no son necesarios para SQLite) -->
+			<!-- <property name="jakarta.persistence.jdbc.user" value=""/> -->
+			<!-- <property name="jakarta.persistence.jdbc.password" value=""/> -->
+
+			<!-- Propiedades de Hibernate (el proveedor de JPA) -->
+
+			<!-- El "Dialecto" le dice a Hibernate cómo "hablar" el SQL
+			específico de SQLite -->
+			<property 
+				name="hibernate.dialect"
+				value="org.hibernate.community.dialect.SQLiteDialect" />
+
+			<!-- (Opcional) Muestra por consola el SQL que Hibernate genera.
+			¡MUY útil para aprender! -->
+			<property name="hibernate.show_sql" value="true" />
+			<property name="hibernate.format_sql" value="true" />
+
+			<!-- 
+            (Opcional) Estrategia de BBDD. 
+            'validate' comprueba que tus clases y tablas coincidan.
+            'update' intenta actualizar las tablas. 
+            'create' las borra y las crea.
+            Usa 'validate' o 'update' para una BBDD existente.
+            -->
+			<property name="hibernate.hbm2ddl.auto" value="validate" />
+
+		</properties>
+	</persistence-unit>
+</persistence>

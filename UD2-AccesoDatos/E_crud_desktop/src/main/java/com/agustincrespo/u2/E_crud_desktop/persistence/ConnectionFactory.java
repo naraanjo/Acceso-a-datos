@@ -26,6 +26,7 @@ public class ConnectionFactory {
 	 * cargada por la JVM.<br>
 	 * Aquí es donde configuramos e iniciamos el pool de conexiones.
 	 */
+	
 	static {
 		try {
 			// Cargamos las propiedades desde tu DbConfig
@@ -37,7 +38,7 @@ public class ConnectionFactory {
 			// --- Configuración JDBC ---
 			// Tomamos la URL y el Driver de db.config
 			config.setJdbcUrl(props.getProperty("url"));
-			config.setDriverClassName(props.getProperty("driver"));
+			config.setDriverClassName(props.getProperty("driver")); // En el archivo db.condif --> driver = 
 
 			// Pasamos las propiedades 'user' y 'password' (aunque en SQLite estén vacías)
 			config.setUsername(props.getProperty("user"));
@@ -53,9 +54,13 @@ public class ConnectionFactory {
 
 			// --- Optimizaciones específicas para SQLite ---
 			// Esto mejora MUCHO el rendimiento de PreparedStatement en SQLite
-			config.addDataSourceProperty("cachePrepStmts", "true");
-			config.addDataSourceProperty("prepStmtCacheSize", "250");
-			config.addDataSourceProperty("prepStmtCacheSqlLimit", "2048");
+		
+			
+			
+			// HARDCOD - NO HACER - AÑADIR EL CONTENIDO A DB.CONFIG - EXTRAER DE AHI
+			//config.addDataSourceProperty("cachePrepStmts", "true");
+			//config.addDataSourceProperty("prepStmtCacheSize", "250");
+			//config.addDataSourceProperty("prepStmtCacheSqlLimit", "2048");
 
 			// Finalmente, inicializamos el pool (DataSource)
 			dataSource = new HikariDataSource(config);
@@ -95,6 +100,8 @@ public class ConnectionFactory {
 	 * Debes llamar a este método cuando tu aplicación de escritorio se esté
 	 * cerrando para liberar todos los recursos.
 	 */
+	
+	// Metodo que ciera las conexiones
 	public static void closePool() {
 		if (dataSource != null) {
 			System.out.println("Cerrando pool de conexiones...");
@@ -102,4 +109,5 @@ public class ConnectionFactory {
 			System.out.println("Pool de conexiones cerrado.");
 		}
 	}
+	
 }
