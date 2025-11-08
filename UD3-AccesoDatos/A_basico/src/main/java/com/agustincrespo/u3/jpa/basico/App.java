@@ -7,6 +7,7 @@ import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.Persistence;
 public class App {
 
+	// Error timestamp sql - localdatetime java
     public static void main(String[] args) {
         // Crear el "Factory". Esto lee el persistence.xml y prepara todo.
         // Se crea UNA SOLA VEZ para toda la aplicación.
