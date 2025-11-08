@@ -13,18 +13,22 @@ import clinica_model.Veterinario;
 import errores.Errores;
 
 /**
- * Clase de persistencia para la entidad Certificacion.
+ * Clase de persistencia para la entidad {@link Certificacion}.
  * 
- * Gestiona tanto las operaciones CRUD en la base de datos como utilidades de
- * control e impresión de datos.
+ * <p>Gestiona las operaciones CRUD sobre la base de datos y 
+ * proporciona utilidades para mostrar y consultar datos relacionados 
+ * con las certificaciones y veterinarios.</p>
  */
 public class CertificacionPersistence {
 
-
     // MÉTODOS CRUD 
- 
 
-    /** Inserta una nueva certificación en la base de datos. */
+    /**
+     * Inserta una nueva certificación en la base de datos.
+     *
+     * @param certificacion objeto {@link Certificacion} a insertar
+     * @return {@code true} si la operación fue exitosa, {@code false} en caso contrario
+     */
     public static boolean create(Certificacion certificacion) {
         String sql = "INSERT INTO Certificacion (institucion_emisora, nombre_especialidad, veterinario_licencia) VALUES (?, ?, ?)";
 
@@ -82,7 +86,11 @@ public class CertificacionPersistence {
         return insertado;
     }
 
-    /** Recupera todas las certificaciones de la base de datos. */
+    /**
+     * Recupera todas las certificaciones de la base de datos.
+     *
+     * @return lista de objetos {@link Certificacion}; lista vacía si no hay registros
+     */
     public static List<Certificacion> readAll() {
         List<Certificacion> certificaciones = new ArrayList<>();
         String sql = "SELECT id, institucion_emisora, nombre_especialidad, veterinario_licencia FROM Certificacion";
@@ -122,7 +130,12 @@ public class CertificacionPersistence {
         return certificaciones;
     }
 
-    /** Recupera una certificación por su ID. */
+    /**
+     * Recupera una certificación específica por su identificador.
+     *
+     * @param id identificador único de la certificación
+     * @return objeto {@link Certificacion} si existe, o {@code null} si no se encuentra
+     */
     public static Certificacion readById(int id) {
         String sql = "SELECT id, institucion_emisora, nombre_especialidad, veterinario_licencia FROM Certificacion WHERE id = ?";
         Certificacion certificacion = null;
@@ -161,7 +174,12 @@ public class CertificacionPersistence {
         return certificacion;
     }
 
-    /** Recupera todas las certificaciones de un veterinario específico. */
+    /**
+     * Recupera todas las certificaciones asociadas a un veterinario por su número de licencia.
+     *
+     * @param veterinarioLicencia número de licencia del veterinario
+     * @return lista de objetos {@link Certificacion} pertenecientes al veterinario indicado
+     */
     public static List<Certificacion> readByVeterinarioLicencia(int veterinarioLicencia) {
         List<Certificacion> certificaciones = new ArrayList<>();
         String sql = "SELECT id, institucion_emisora, nombre_especialidad, veterinario_licencia FROM Certificacion WHERE veterinario_licencia = ?";
@@ -202,7 +220,12 @@ public class CertificacionPersistence {
         return certificaciones;
     }
 
-    /** Actualiza una certificación existente. */
+    /**
+     * Actualiza los datos de una certificación existente en la base de datos.
+     *
+     * @param certificacion objeto {@link Certificacion} con los datos actualizados
+     * @return {@code true} si la operación fue exitosa, {@code false} si no se actualizó
+     */
     public static boolean update(Certificacion certificacion) {
         if (certificacion == null || certificacion.getId() <= 0) {
             return false;
@@ -254,7 +277,12 @@ public class CertificacionPersistence {
         return actualizado;
     }
 
-    /** Elimina una certificación por su ID. */
+    /**
+     * Elimina una certificación de la base de datos por su identificador.
+     *
+     * @param id identificador único de la certificación
+     * @return {@code true} si fue eliminada correctamente, {@code false} si no se eliminó
+     */
     public static boolean delete(int id) {
         if (id <= 0) {
             return false;
@@ -302,7 +330,12 @@ public class CertificacionPersistence {
         return eliminado;
     }
 
-    /** Elimina una certificación usando el objeto como parámetro. */
+    /**
+     * Elimina una certificación usando el objeto {@link Certificacion} como parámetro.
+     *
+     * @param certificacion objeto a eliminar
+     * @return {@code true} si fue eliminada correctamente, {@code false} si el objeto es nulo o inválido
+     */
     public static boolean delete(Certificacion certificacion) {
         if (certificacion != null) {
             return delete(certificacion.getId());
@@ -311,11 +344,13 @@ public class CertificacionPersistence {
         }
     }
 
-    
-    //MÉTODOS AUXILIARES 
-    
+    // MÉTODOS AUXILIARES 
 
-    /** Muestra los detalles de una certificación en consola. */
+    /**
+     * Muestra en consola los detalles de una certificación específica.
+     *
+     * @param cert objeto {@link Certificacion} cuyos datos se mostrarán
+     */
     public static void mostrarDetallesCertificacion(Certificacion cert) {
         if (cert == null) {
             System.out.println("Certificación nula o no encontrada.");
@@ -338,7 +373,9 @@ public class CertificacionPersistence {
         }
     }
 
-    /** Muestra todas las certificaciones del sistema. */
+    /**
+     * Muestra en consola todas las certificaciones registradas en el sistema.
+     */
     public static void mostrarTodasCertificaciones() {
         List<Certificacion> certificaciones = readAll();
         if (certificaciones == null || certificaciones.isEmpty()) {
@@ -352,7 +389,11 @@ public class CertificacionPersistence {
         }
     }
 
-    /** Muestra todas las certificaciones de un veterinario específico. */
+    /**
+     * Muestra en consola todas las certificaciones pertenecientes a un veterinario específico.
+     *
+     * @param licenciaVet número de licencia del veterinario
+     */
     public static void mostrarCertificacionesPorVeterinario(int licenciaVet) {
         List<Certificacion> certificaciones = readByVeterinarioLicencia(licenciaVet);
         if (certificaciones == null || certificaciones.isEmpty()) {
@@ -366,10 +407,15 @@ public class CertificacionPersistence {
         }
     }
 
-    /** Carga un veterinario por su licencia (evita dependencia circular). */
+    /**
+     * Recupera un objeto {@link Veterinario} según su número de licencia.
+     * <p>Este método evita dependencias circulares entre las clases de modelo y persistencia.</p>
+     *
+     * @param licencia número de licencia del veterinario
+     * @return objeto {@link Veterinario} correspondiente o {@code null} si no se encuentra
+     */
     public static Veterinario readVeterinarioByLicencia(int licencia) {
         return VeterinarioPersistence.readById(licencia);
     }
 
-   
 }
