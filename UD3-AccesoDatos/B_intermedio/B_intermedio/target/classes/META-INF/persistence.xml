@@ -1,0 +1,45 @@
+<persistence xmlns="https://jakarta.ee/xml/ns/persistence"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="https://jakarta.ee/xml/ns/persistence https://jakarta.ee/xml/ns/persistence/persistence_3_1.xsd"
+	version="3.1">
+
+	<persistence-unit name="usuarios-jpa-pu" transaction-type="RESOURCE_LOCAL">
+
+		<!-- RECUERDA METER AQUÍ LAS CLASES -->
+		<class>com.agustincrespo.u3.hibernate.intermedio.model.Usuario</class>
+		<class>com.agustincrespo.u3.hibernate.intermedio.model.Perfil</class>
+		<class>com.agustincrespo.u3.hibernate.intermedio.model.Articulo</class>
+		<class>com.agustincrespo.u3.hibernate.intermedio.model.Categoria</class>
+
+		<properties>
+			<property 
+				name="jakarta.persistence.jdbc.driver"
+				value="org.sqlite.JDBC" />
+
+			<property 
+				name="jakarta.persistence.jdbc.url"
+				value="jdbc:sqlite:usuarios.db" />
+
+			<!-- (Usuario y pass no son necesarios para SQLite) -->
+			<!-- <property name="jakarta.persistence.jdbc.user" value=""/> -->
+			<!-- <property name="jakarta.persistence.jdbc.password" value=""/> -->
+
+			<property 
+				name="hibernate.dialect"
+				value="org.hibernate.community.dialect.SQLiteDialect" />
+
+			<property name="hibernate.show_sql" value="true" />
+			<property name="hibernate.format_sql" value="true" />
+
+			<!-- 
+            (Opcional) Estrategia de BBDD. 
+            'validate' comprueba que tus clases y tablas coincidan.
+            'update' intenta actualizar las tablas. 
+            'create' las borra y las crea.
+            Usa 'validate' o 'update' para una BBDD existente.
+            -->
+			<property name="hibernate.hbm2ddl.auto" value="validate" />
+
+		</properties>
+	</persistence-unit>
+</persistence>

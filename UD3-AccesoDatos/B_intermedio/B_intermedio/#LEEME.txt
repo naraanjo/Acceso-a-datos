@@ -1,0 +1,11 @@
+¿QUÉ HAY EN ESTE PROYECTO?
+
+Ampliación del proyecto "A_basico" con ejemplos adicionales de:
+  - Uso de relaciones más complejas entre tablas, como son la 1:N y N:M.
+  - Para esto, se ha ampliado la base de datos con:
+  		|-> Nuevas tablas y datos de ejemplo que ilustran estos conceptos.
+
+Revisar el archivo SQL y el diagrama para ver los detalles completos de los datos y las relaciones.
+
+Para el siguiente proyecto "C_avanzado":
+  |-> Consultas SQL avanzadas que incluyen JOINs, subconsultas y funciones agregadas.
