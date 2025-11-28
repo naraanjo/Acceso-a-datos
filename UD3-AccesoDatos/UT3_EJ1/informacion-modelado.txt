@@ -1,0 +1,38 @@
+
+Información 
+	- Creación de una enum class, para los posibles estados del pedido
+	(PENDIENTE, ENVIADO Y ENTREGADO)
+	
+	
+ELIMINACION DE CLIENTE (INFO)  -- (trigger-before-delete-cliente.sql):	
+	Actualmente, en el modelo de datos se pueden eliminar algunas entidades bajo condiciones específicas.
+	La información fiscal puede ser eliminada, al eliminar el cliente, a su vez he creado un trigger
+	que salte antes de hacer DELETE sobre Cliente, modificando los campos en todas sus compras
+	para poder eliminar al maximo toda su informacion. (trigger-before-delete-cliente)
+	
+	Este trigger me permite modificar los campos a ("") en caso de string, (0) en caso de numeros
+	o una fecha antigua si el campo es de tipo fecha (ej:1000-01-01 00:00:00)
+	
+ELIMINACION ARTICULO (INFO):
+	He usado otra solución diferente a la hablada en clase, ya que pensandolo crear un campo
+	"0 o 1" que me diga si esta activo o no el articulo, es bastante mas simple, efectivo y rápido
+	que crear otro script para poner la id en negativa. 
+	De esta forma, unicamente habria que hacer un update al campo añadido, (activo) cambiando su estado
+	a true o false (según lo que queramos). Además, no afectaria a la relación articulo_compra, donde se encuentra
+	la FK de articulo.
+	
+
+OBJETOS EN MEMORIA
+	He controlado que las compras de un clientes (get) sea inmodificable desde el exterior
+	
+	// Evito modificaciones del exterior
+	public List<Compra> getCompras() {
+	    return Collections.unmodifiableList(compras);
+	}
+	
+	Ademas, no dejo el paso de ningun objeto null, todo controlado con los set, y excepciones, controladas 
+	(try-catch).
+	
+VISIBILIDAD ArticuloCompra
+	Controlo que no sean publicas (Articulo y compra), para ello quito el public, ya que por defecto se obtiene
+	una visibilidad (package-private), evitando acceso del exterior y una mayor seguridad.
