@@ -117,6 +117,8 @@ public class Articulo {
 		setDescripcion(descripcion);
 		setPrecioActual(precioActual);
 		setStock(stock);
+		// Estado activo por defecto
+	
 	}
 
 	// --- Getters y Setters ---
@@ -130,8 +132,7 @@ public class Articulo {
 		return id;
 	}
 
-	// No se recomienda cambiar ID autogenerado
-	// public void setId(int id) { this.id = id; }
+	
 
 	/**
 	 * Obtiene el nombre del artículo.

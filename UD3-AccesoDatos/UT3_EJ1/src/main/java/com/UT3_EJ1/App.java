@@ -62,11 +62,16 @@ public class App {
                 Compra.actualizar(compraParaModificar, em);
             }
 
-            // --- Ejemplo de actualización de artículo ---
+            // --- Ejemplo de actualización de artículo (inactivo, NO DELETE, cambio el campo estado) ---
             System.out.println("\n===== ACTUALIZACIÓN DE UN ARTICULO =====");
+            // "Inhabilito el articulo, poniendo el estado a false, y vaciando su contenido (campos)"
             Articulo articuloParaModificar = Articulo.obtenerTodos(em).stream().findFirst().orElse(null);
             if (articuloParaModificar != null) {
                 articuloParaModificar.setEstado(false);
+                articuloParaModificar.setStock(0);
+                articuloParaModificar.setPrecioActual(BigDecimal.ZERO);
+                articuloParaModificar.setNombre("");
+                articuloParaModificar.setDescripcion("");
                 Articulo.actualizar(articuloParaModificar, em);
             }
 
@@ -78,7 +83,7 @@ public class App {
                 InformacionFiscal.actualizar(infoFscalActualizar, em);
             }
 
-            limpiarBd(em); // Limpiar base de datos al finalizar
+           // limpiarBd(em); // Limpiar base de datos al finalizar
 
         } catch (Exception e) {
             System.err.println("Error inesperado en el flujo principal: " + e.getMessage());

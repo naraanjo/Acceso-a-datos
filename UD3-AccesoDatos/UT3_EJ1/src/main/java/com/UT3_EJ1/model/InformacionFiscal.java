@@ -281,7 +281,7 @@ public class InformacionFiscal {
 			tx.begin();
 			InformacionFiscal infoFiscal = em.find(InformacionFiscal.class, nifCif);
 			if (infoFiscal != null) {
-				em.remove(infoFiscal);
+				em.remove(infoFiscal); // Actua el trigger
 			}
 			tx.commit();
 		} catch (Exception e) {

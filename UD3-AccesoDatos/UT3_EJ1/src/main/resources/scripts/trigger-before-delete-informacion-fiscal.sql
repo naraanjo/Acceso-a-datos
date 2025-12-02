@@ -1,6 +1,9 @@
+DROP TRIGGER IF EXISTS before_delete_cliente;
 
-CREATE TRIGGER before_delete_informacion_fiscal
-BEFORE DELETE ON informacion_fiscal
+DELIMITER 
+
+CREATE TRIGGER before_delete_cliente
+BEFORE DELETE ON cliente
 FOR EACH ROW
 BEGIN
     -- Actualizamos todas las compras del cliente a borrar
@@ -10,7 +13,9 @@ BEGIN
         direccion = '',
         precio_total = 0.00, 
         fecha_realizada = NOW(), 
-       
+        -- Desvinculamos poniendo NULL. 
+        -- Esto evita que salte el 'ON DELETE RESTRICT' de la tabla compra.
+        cliente_nif_cif = NULL
         
     WHERE cliente_nif_cif = OLD.nif_cif;
     
@@ -18,14 +23,11 @@ END
 
 DELIMITER ;
 
-SHOW TRIGGERS FROM shop_db;
-DROP TRIGGER IF EXISTS before_delete_informacion_fiscal;
-
 
 --	Actualmente, en el modelo de datos se pueden eliminar algunas entidades bajo condiciones específicas.
---	El cliente puede ser eliminado en cascada, eliminando su informacion_fiscal, ( trigger
---	que salta antes de hacer DELETE sobre informacion_fiscal ), modificando los campos de las compras de un  Cliente 
---	para poder eliminar al maximo toda su informacion. 
+--	El cliente puede ser eliminado en cascada, eliminando su informacion_fiscal
+-- modifico los campos de las compras de un  Cliente mediante el trigger, al ser este eliminado 
+-- para poder eliminar al maximo toda su informacion. 
 	
 --7	Este trigger me permite modificar los campos a ("") en caso de string, (0) en caso de numeros,
 --	(fecha actual NOW()) en caso de  fecha 
