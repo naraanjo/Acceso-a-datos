@@ -15,16 +15,16 @@ DROP TABLE IF EXISTS informacion_fiscal;
 
 CREATE TABLE informacion_fiscal (
   nif_cif varchar(20) NOT NULL,
-  direccion_fiscal varchar(255) NOT NULL,
-  telefono varchar(20) NOT NULL UNIQUE,
+  direccion_fiscal varchar(255) NOT NULL DEFAULT "",
+  telefono varchar(20) NOT NULL UNIQUE DEFAULT "",
   PRIMARY KEY (nif_cif)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
 
 CREATE TABLE cliente (
   nif_cif varchar(20) NOT NULL,
-  nombre varchar(100) NOT NULL,
-  email varchar(100) NOT NULL UNIQUE,
-  fecha_registro timestamp NOT NULL,
+  nombre varchar(100) NOT NULL DEFAULT "",
+  email varchar(100) NOT NULL UNIQUE DEFAULT "",
+  fecha_registro timestamp NOT NULL DEFAULT NOW(),
   PRIMARY KEY (nif_cif),
   CONSTRAINT fk_cliente_informacion_fiscal FOREIGN KEY (nif_cif) 
     REFERENCES informacion_fiscal (nif_cif) 
@@ -34,10 +34,10 @@ CREATE TABLE cliente (
 
 CREATE TABLE compra (
   id integer(10) unsigned NOT NULL AUTO_INCREMENT,
-  fecha_realizada timestamp NOT NULL,
+  fecha_realizada timestamp NOT NULL DEFAULT NOW(),
   estado ENUM('PENDIENTE', 'ENVIADO', 'ENTREGADO', 'ELIMINADO') NOT NULL,
-  direccion varchar(255) NOT NULL,
-  precio_total decimal(10,2) NOT NULL,
+  direccion varchar(255) NOT NULL DEFAULT "",
+  precio_total decimal(10,2) NOT NULL DEFAULT 0,
   cliente_nif_cif varchar(20)  NULL,
   PRIMARY KEY (id),
   KEY fk_compra_cliente (cliente_nif_cif),
@@ -49,19 +49,19 @@ CREATE TABLE compra (
 
 CREATE TABLE articulo (
   id integer(10) unsigned NOT NULL AUTO_INCREMENT,
-  nombre varchar(100) NOT NULL,
-  descripcion text NOT NULL,
-  precio_actual decimal(10,2) NOT NULL,
+  nombre varchar(100) NOT NULL DEFAULT "",
+  descripcion text NOT NULL DEFAULT "",
+  precio_actual decimal(10,2) NOT NULL default 0,
   stock integer(10) unsigned NOT NULL DEFAULT 0,
-  activo TINYINT(1) NOT NULL DEFAULT 1,
+  estado TINYINT(1) NOT NULL DEFAULT 1,
   PRIMARY KEY (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
 
 CREATE TABLE articulo_compra (
   id_articulo integer(10) unsigned NOT NULL,
   id_compra integer(10) unsigned NOT NULL,
-  precio_compra decimal(10,2) NOT NULL,
-  unidades integer(10) unsigned NOT NULL,
+  precio_compra decimal(10,2) NOT NULL DEFAULT 0,
+  unidades integer(10) unsigned NOT NULL DEFAULT 0,
   PRIMARY KEY (id_articulo,id_compra),
   KEY fk_articulo_compra_compra (id_compra),
   CONSTRAINT fk_articulo_compra_articulo FOREIGN KEY (id_articulo) 

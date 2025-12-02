@@ -4,7 +4,7 @@ Información
 	(PENDIENTE, ENVIADO Y ENTREGADO)
 	
 	
-ELIMINACION DE CLIENTE (INFO)  -- (trigger-before-delete-informacion-fiscal.sql):	
+ELIMINACION DE CLIENTE (INFO)  -- (trigger-before-delete-informacion-fiscal.sql) |-> Carpeta scripts (resources):	
 	Actualmente, en el modelo de datos se pueden eliminar algunas entidades bajo condiciones específicas.
 	El cliente puede ser eliminado al eliminar su info_fiscal (cascade), a su vez he creado un trigger
 	que salte antes de hacer DELETE sobre informacion_fiscal, modificando los campos en todas sus compras

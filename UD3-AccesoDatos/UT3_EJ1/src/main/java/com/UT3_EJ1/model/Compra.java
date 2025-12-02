@@ -5,6 +5,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -70,10 +71,11 @@ public class Compra {
 	
 	/**
 	 * Cliente que ha realizado la compra.
-	 * <p>Relación de muchos a uno (N:1), carga perezosa (LAZY) y obligatoria (nullable = false).</p>
+	 * <p>Relación de muchos a uno (N:1), carga perezosa (LAZY) y (nullable = true), para que
+	 * al eliminar un cliente se borre su informacion de las compras -ON DELETE SET NULL-</p>
 	 */
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "cliente_nif_cif", nullable = false)
+	@JoinColumn(name = "cliente_nif_cif", nullable = true)
 	private Cliente cliente;
 
 	// --- RELACIÓN 1:N con ArticuloCompra ---
@@ -211,15 +213,12 @@ public class Compra {
 	 * @throws IllegalArgumentException si el cliente es nulo
 	 */
 	public void setCliente(Cliente cliente) {
-		if (cliente == null) {
-			throw new IllegalArgumentException("Cliente no puede ser null");
-		}
-		this.cliente = cliente;
+		  this.cliente = cliente;
 
-		// Coherencia bidireccional: añade esta compra al cliente si no está ya
-		if (!cliente.getCompras().contains(this)) {
-			cliente.addCompra(this); 
-		}
+		    // Solo sincronizamos la lista del cliente si no es null
+		    if (cliente != null && !cliente.getCompras().contains(this)) {
+		        cliente.addCompra(this); 
+		    }
 	}
 
 	/**
@@ -262,6 +261,105 @@ public class Compra {
 		}
 	}
 
+	 // --- CRUD ---
+
+    /**
+     * Crea una nueva compra en la base de datos.
+     * <p>
+     * La compra puede contener artículos asociados mediante {@link Compra#getArticulosCompra()}.
+     * </p>
+     *
+     * @param compra Compra a persistir
+     * @param em     EntityManager utilizado para la operación
+     * @throws IllegalArgumentException si compra es null
+     * @throws RuntimeException         si ocurre un error durante la persistencia
+     */
+    public static void crear(Compra compra, EntityManager em) {
+        validarCompraNoNull(compra);
+        validarEntityManager(em);
+
+        EntityTransaction tx = em.getTransaction();
+        try {
+            tx.begin();
+            em.persist(compra);
+            tx.commit();
+        } catch (Exception e) {
+            if (tx.isActive()) tx.rollback();
+            throw e;
+        }
+    }
+
+    /**
+     * Obtiene una compra por su identificador.
+     *
+     * @param id Identificador de la compra
+     * @param em EntityManager utilizado para la operación
+     * @return Compra si existe, null si no se encuentra
+     */
+    public Compra selectCompra(int id, EntityManager em) {
+        validarId(id);
+        validarEntityManager(em);
+        return em.find(Compra.class, id);
+    }
+
+    /**
+     * Recupera todas las compras de la base de datos.
+     *
+     * @param em EntityManager utilizado para la operación
+     * @return Lista de compras, vacía si no hay registros
+     */
+    public static  List<Compra> obtenerTodos(EntityManager em) {
+        validarEntityManager(em);
+        return em.createQuery("SELECT c FROM Compra c", Compra.class).getResultList();
+    }
+
+    /**
+     * Actualiza los datos de una compra existente.
+     * <p>
+     * Permite actualizar dirección, estado, precio total y artículos asociados.
+     * No se modifica la asociación con el cliente directamente mediante este método.
+     * </p>
+     *
+     * @param compra Compra con los datos actualizados
+     * @param em     EntityManager utilizado para la operación
+     * @throws IllegalArgumentException si compra es null
+     * @throws RuntimeException         si ocurre un error durante la actualización
+     */
+    public  static void actualizar(Compra compra, EntityManager em) {
+        validarCompraNoNull(compra);
+        validarEntityManager(em);
+
+        EntityTransaction tx = em.getTransaction();
+        try {
+            tx.begin();
+            em.merge(compra);
+            tx.commit();
+        } catch (Exception e) {
+            if (tx.isActive()) tx.rollback();
+            throw e;
+        }
+    }
+
+    // --- MÉTODOS DE VALIDACIÓN ---
+
+    private static void validarCompraNoNull(Compra compra) {
+        if (compra == null) {
+            throw new IllegalArgumentException("La compra no puede ser null");
+        }
+    }
+
+    private void validarId(int id) {
+        if (id <= 0) {
+            throw new IllegalArgumentException("El id de la compra debe ser mayor que 0");
+        }
+    }
+
+    private static void validarEntityManager(EntityManager em) {
+        if (em == null) {
+            throw new IllegalArgumentException("El EntityManager no puede ser null");
+        }
+    }
+   
 	/**
 	 * Retorna una representación en cadena de la compra.
 	 * @return cadena con los detalles básicos de la compra

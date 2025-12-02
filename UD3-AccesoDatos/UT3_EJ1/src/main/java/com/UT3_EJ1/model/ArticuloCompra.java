@@ -1,7 +1,10 @@
 package com.UT3_EJ1.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
+
 import java.math.BigDecimal;
+import java.util.List;
 
 /**
  * Representa la entidad asociativa (tabla intermedia) de la relación N:M entre {@link Articulo} y {@link Compra}.
@@ -33,9 +36,9 @@ public class ArticuloCompra {
 	 * Precio unitario del artículo en el momento exacto de la compra.
 	 * <p>Permite mantener un histórico de precios, independiente del precio actual del catálogo.</p>
 	 */
+	
 	@Column(name = "precio_compra", nullable = false, precision = 10, scale = 2)
 	private BigDecimal precioCompra;
-
 	/**
 	 * Cantidad de unidades del artículo incluidas en esta compra.
 	 */
@@ -199,6 +202,21 @@ public class ArticuloCompra {
 		}
 	}
 
+	    /**
+	     * Recupera todas las líneas de compra (relaciones Artículo-Compra) existentes en la base de datos.
+	     * * @param em el EntityManager activo para realizar la consulta
+	     * @return una lista con todos los objetos ArticuloCompra
+	     */
+	    public static List<ArticuloCompra> obtenerTodos(EntityManager em) {
+	        if (em == null) {
+	            throw new IllegalArgumentException("El EntityManager no puede ser null");
+	        }
+	        
+	        // Consulta  Seleccionamos la entidad completa 'ac'
+	        return em.createQuery("SELECT ac FROM ArticuloCompra ac", ArticuloCompra.class)
+	                 .getResultList();
+	    }
+	    
 	/**
 	 * Retorna una representación en cadena de la línea de compra.
 	 * @return una cadena con los IDs relacionados y los valores de la línea
