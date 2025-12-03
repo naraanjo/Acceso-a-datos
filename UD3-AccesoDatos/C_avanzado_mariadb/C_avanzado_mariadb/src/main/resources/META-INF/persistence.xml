@@ -1,0 +1,42 @@
+<persistence xmlns="https://jakarta.ee/xml/ns/persistence"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="https://jakarta.ee/xml/ns/persistence https://jakarta.ee/xml/ns/persistence/persistence_3_2.xsd"
+	version="3.2">
+
+	<persistence-unit name="usuarios_db2" transaction-type="RESOURCE_LOCAL">
+
+		<class>com.agustincrespo.u3.hibernate.avanzado.model.Usuario</class>
+		<class>com.agustincrespo.u3.hibernate.avanzado.model.Articulo</class>
+
+		<properties>
+			<property 
+				name="jakarta.persistence.jdbc.driver"
+				value="org.mariadb.jdbc.Driver" />
+
+			<property 
+				name="jakarta.persistence.jdbc.url"
+				value="${db.url}" />
+
+			<property 
+			 	name="jakarta.persistence.jdbc.user" 
+			 	value="${db.user}"/> 
+			 
+			<property 
+				name="jakarta.persistence.jdbc.password" 
+				value="${db.pass}"/> 
+
+			<property name="hibernate.show_sql" value="true" />
+			<property name="hibernate.format_sql" value="true" />
+
+			<!-- 
+            (Opcional) Estrategia de BBDD. 
+            'validate' comprueba que tus clases y tablas coincidan.
+            'update' intenta actualizar las tablas. 
+            'create' las borra y las crea.
+            Usa 'validate' o 'update' para una BBDD existente.
+            -->
+			<property name="hibernate.hbm2ddl.auto" value="validate" />
+
+		</properties>
+	</persistence-unit>
+</persistence>

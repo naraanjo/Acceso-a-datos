@@ -1,0 +1,9 @@
+¿QUÉ HAY EN ESTE PROYECTO?
+
+Este proyecto se plantea como una evolución del proyecto B_intermedio_mariadb.
+
+Se cambia la estructura de clases para implementar los patrones DAO y DTO, montando una arquitectura en capas.
+
+Mediante el patrón DAO (Data Access Object), se abstrae y encapsula todo el acceso a la fuente de datos. El DAO gestiona la conexión con la base de datos para obtener y almacenar datos.
+
+Mediante el patrón DTO (Data Transfer Object), se crean objetos simples que transportan datos entre las diferentes capas de la aplicación, sin contener lógica de negocio.

@@ -1,0 +1,9 @@
+Ejecutar desde la terminal de docker:
+
+docker exec -it usuarios_mariadb mariadb -u root -p
+
+¿Qué hace cada cosa?
+    docker exec: Ejecuta un comando en un contenedor.
+    -it: Modo "interactivo" (para que puedas escribir) y "TTY" (para que se vea como una terminal).
+    usuarios_mariadb: El nombre de tu contenedor.
+    mariadb -u root -p: El comando a ejecutar dentro del contenedor (el cliente mysql, como usuario root, pidiendo la contraseña).
