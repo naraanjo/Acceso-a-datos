@@ -1,0 +1,2 @@
+Recomiendo leer el archivo informacion-modelado, donde explico las decisiones tomadas
+de forma precisa.

@@ -1,0 +1,19 @@
+docker run -d `
+    --name usuarios_mariadb `
+    -p 3306:3306 `
+    -e MARIADB_ROOT_PASSWORD=Abcd1234 `
+    -e MARIADB_USER=dev_user `
+    -e MARIADB_PASSWORD=dev_pass_123 `
+    -v usuarios_mariadb_data:/var/lib/mysql `
+    -v usuarios_mariadb_logs:/var/log/mysql `
+    -v usuarios_mariadb_conf:/etc/mysql/conf.d `
+    mariadb:latest
+    
+    
+    
+    
+    OJO con este comando:
+    -e MARIADB_DATABASE=usuarios_db `
+    --character-set-server=utf8mb4 `
+    --collation-server=utf8mb4_unicode_ci 
+    

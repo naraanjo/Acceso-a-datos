@@ -1,0 +1,30 @@
+¿QUÉ HAY EN ESTE PROYECTO?
+
+Este proyecto se plantea como una corrección del proyecto B_avanzado_mariadb.
+
+MIRAR TODOES!!!!
+
+Este proyecto constituye una refactorización y corrección arquitectónica del proyecto "B_avanzado_mariadb", implementando una arquitectura ESTRICTA de 3 capas.
+
+EL CAMBIO PRINCIPAL: LA CAPA DE SERVICIO
+En el código anterior, existía un acoplamiento incorrecto donde el Controlador hablaba directamente con el DAO.
+   - Antes: Controller -> DAO (El controlador realizaba conversiones y lógica).
+   - Ahora: Controller -> Service -> DAO (El controlador solo delega, el servicio orquesta).
+
+Esta capa intermedia es esencial para alojar la Lógica de Negocio que antes estaba dispersa o ausente.
+
+MEJORAS CLAVE IMPLEMENTADAS
+A. Seguridad y Gestión de Contraseñas (Separación de Responsabilidades)
+El 'UsuarioDTO' original está diseñado para mostrar datos, no para recibir credenciales sensibles.
+   - Problema: La base de datos requiere una contraseña (nullable=false), pero el DTO de salida no debe llevarla.
+   - Solución: Se ha implementado un nuevo DTO de entrada: 'UsuarioRegistroDTO'. Este objeto transporta la contraseña en texto plano exclusivamente para el proceso de alta.
+   - El Servicio ('UsuarioServiceImpl') se encarga de recibir este DTO, hashear la contraseña y asignarla a la Entidad antes de guardarla.
+
+B. Vinculación de Relaciones (Entidades Relacionales)
+Los DTOs son objetos planos y desacoplados.
+   - Problema: El 'ArticuloDTO' contiene un 'autorId', pero la entidad 'Articulo' requiere un objeto 'Usuario' completo para establecer la relación @ManyToOne.
+   - Solución: El Servicio ('ArticuloServiceImpl') actúa como el "pegamento". Utiliza el 'autorId' del DTO para buscar la entidad 'Usuario' real en la base de datos y la asigna a la entidad 'Articulo' antes de persistirla, garantizando la integridad referencial.
+
+REUBICACIÓN DE LÓGICA (CLEAN CODE)
+Toda la lógica de conversión ('toEntity', 'fromEntity') y las validaciones de negocio (comprobar si un email ya existe o validar reglas de cambio de contraseña) se han movido de los Controladores a la Capa de Servicio.
+Esto deja a los Controladores limpios, encargándose únicamente de recibir la petición HTTP, delegar al servicio y devolver la respuesta adecuada, cumpliendo con el principio de Responsabilidad Única.

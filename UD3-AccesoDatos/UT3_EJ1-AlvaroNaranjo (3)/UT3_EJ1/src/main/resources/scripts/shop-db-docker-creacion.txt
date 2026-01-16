@@ -1,0 +1,11 @@
+docker run -d `
+    --name shop_db `
+    -p 3310:3306 `
+    -e MARIADB_ROOT_PASSWORD=Abcd1234 `
+    -v shop_mariadb_data:/var/lib/mysql `
+    -v shop_mariadb_logs:/var/log/mysql `
+    -v shop_mariadb_conf:/etc/mysql/conf.d `
+    mariadb:latest
+    
+    
+    
